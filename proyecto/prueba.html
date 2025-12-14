@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Mario Bros VR World - Con Colisiones</title>
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+    <style>
+        #start-button {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+            padding: 20px 40px;
+            font-size: 24px;
+            background: #ff0000;
+            color: white;
+            border: 4px solid #8b0000;
+            border-radius: 10px;
+            cursor: pointer;
+            font-family: 'Arial Black', sans-serif;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        #start-button:hover {
+            background: #cc0000;
+            transform: translate(-50%, -50%) scale(1.05);
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <button id="start-button">¡INICIAR MUNDO DE MARIO! 🍄</button>
+
+    <a-scene>
+        <a-assets>
+            <img src="images/ladrillo.png" id="ladrillo-color">
+            <img src="images/ladrillo_normal.png" id="ladrillo-normal">
+            <a-asset-item id="mario-gltf" src="models/mario_question_block/scene.gltf"></a-asset-item>
+            <a-asset-item id="mario-nube1" src="models/stylized_clouds/scene.gltf"></a-asset-item>
+            <a-asset-item id="mario-nube-mala" src="models/mario_nube_mala/scene.gltf"></a-asset-item>
+            <!-- Múltiples pistas de música -->
+            <audio id="music-1" src="sounds/mario_music.mp3" preload="auto"></audio>
+            <audio id="music-2" src="sounds/mario_music_2.mp3" preload="auto"></audio>
+            <audio id="music-3" src="sounds/mario_music_3.mp3" preload="auto"></audio>
+            <audio id="music-4" src="sounds/mario_music_4.mp3" preload="auto"></audio>
+            <audio id="music-5" src="sounds/mario_music_5.mp3" preload="auto"></audio>
+            <audio id="music-6" src="sounds/mario_music_6.mp3" preload="auto"></audio>
+        </a-assets>
+
+        <!-- Suelo -->
+        <a-plane color="#83522f" position="0 -0.1 0" width="100" height="100" rotation="-90 0 0"></a-plane>
+        <a-plane color="#70a359" position="0 0 0" rotation="-90 0 0" width="100" height="100"></a-plane>
+
+        <!--Tuberia-->
+        <a-box class="collidable" position="0 1.05 -20" width="1.2" height="0.3" depth="1.2" color="#336622"></a-box>
+        <a-cylinder class="collidable" position="0 0.5 -20" radius="0.4" height="1" color="#489934"></a-cylinder>
+
+        <!-- Ladrillos -->
+        <a-entity class="collidable" mixin="ladrillo-base" position="0 0.5 -5"></a-entity>
+        <a-entity class="collidable" mixin="ladrillo-base" position="0 0.5 -12"></a-entity>
+        <a-entity class="collidable" mixin="ladrillo-base" position="4 0.5 -12"></a-entity>
+        <a-entity class="collidable" mixin="ladrillo-base" position="-2 0.5 -11"></a-entity>
+        <a-entity class="collidable" mixin="ladrillo-base" position="-2 0.5 -15"></a-entity>
+
+        <!-- Bloque de pregunta más grande con mejor detección de click -->
+        <a-entity id="question-block" class="clickable collidable" position="0 1.8 -10"
+            animation="property: position; to: 0 1.95 -5; dir: alternate; dur: 500; loop: true">
+
+            <!-- Modelo 3D GLTF (más grande y clickeable) -->
+            <a-gltf-model class="clickable" src="#mario-gltf" scale="7 7 7" rotation="0 0 0">
+            </a-gltf-model>
+
+            <!-- Bloque de respaldo -->
+            <a-box id="fallback-block" class="clickable" width="1.6" height="1.6" depth="1.6" color="#FFB900"
+                visible="false">
+            </a-box>
+        </a-entity>
+
+        <!--GLTF añadidos-->
+        <a-gltf-model
+            src="#mario-nube1"
+            scale="5 5 5"
+            position="-50 60 -20"></a-gltf-model>
+        <a-sky color="#63a4ff"></a-sky>
+
+        <a-gltf-model 
+            src="#mario-nube1" 
+            scale="5 5 5" 
+            position="50 60 -50">
+        </a-gltf-model>
+
+        <a-gltf-model 
+        src="#mario-nube1" 
+        scale="5 5 5" 
+        position="40 60 50">
+        </a-gltf-model>
+
+        <a-gltf-model 
+        src="#mario-nube-mala" 
+        scale="50 50 50" 
+        position="-9 5 -10"
+        rotation="30 40 0">
+        </a-gltf-model>
+
+        <!--Cielo-->
+        <a-sky color="#63a4ff"></a-sky>
+
+        <!-- Cámara con cursor y sistema de colisiones mejorado -->
+        <a-entity id="player" position="0 1.6 0">
+            <a-entity id="camera-rig" camera look-controls movement-controls="speed: 0.15; constrainToNavMesh: false">
+                <a-cursor color="#FFD700" fuse="true" fuse-timeout="500" raycaster="objects: .clickable"
+                    animation__click="property: scale; startEvents: click; from: 0.1 0.1 0.1; to: 1 1 1; dur: 150"
+                    animation__fusing="property: scale; startEvents: fusing; from: 1 1 1; to: 0.1 0.1 0.1; dur: 500">
+                </a-cursor>
+            </a-entity>
+        </a-entity>
+
+        <!-- Mixins -->
+        <a-mixin id="ladrillo-base" geometry="primitive: box; width: 1; height: 1; depth: 1"
+            material="src: #ladrillo-color; normalMap: #ladrillo-normal; normalScale: 1 -1"></a-mixin>
+
+    </a-scene>
+    <script src="scripts/funciones.js"></script>
+</body>
+
+</html>
